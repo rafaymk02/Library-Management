@@ -1,0 +1,117 @@
+-- Create LIBRARIAN table
+CREATE TABLE LIBRARIAN (
+  ssn VARCHAR(20) PRIMARY KEY,
+  name VARCHAR(100) NOT NULL,
+  email VARCHAR(100) UNIQUE NOT NULL,
+  salary DECIMAL(10,2) NOT NULL
+);
+
+-- Create CLIENT table
+CREATE TABLE CLIENT (
+  email VARCHAR(100) PRIMARY KEY,
+  name VARCHAR(100) NOT NULL,
+  password VARCHAR(100) NOT NULL
+);
+
+-- Create ADDRESS table
+CREATE TABLE ADDRESS (
+  address_id SERIAL PRIMARY KEY,
+  street VARCHAR(100) NOT NULL,
+  city VARCHAR(100) NOT NULL,
+  state VARCHAR(2) NOT NULL,
+  zip VARCHAR(10) NOT NULL,
+  email VARCHAR(100) REFERENCES CLIENT(email),
+  UNIQUE (email, street, city, state, zip)
+);
+
+-- Create CREDIT_CARD table
+CREATE TABLE CREDIT_CARD (
+  card_number VARCHAR(20) PRIMARY KEY,
+  expiration_date DATE NOT NULL,
+  email VARCHAR(100) REFERENCES CLIENT(email),
+  address_id INT REFERENCES ADDRESS(address_id)
+);
+
+-- Create DOCUMENT table
+CREATE TABLE DOCUMENT (
+  document_id SERIAL PRIMARY KEY,
+  title VARCHAR(255) NOT NULL,
+  year INT NOT NULL
+);
+
+-- Create COPY table
+CREATE TABLE COPY (
+  copy_id SERIAL PRIMARY KEY,
+  document_id INT REFERENCES DOCUMENT(document_id),
+  is_electronic BOOLEAN DEFAULT false,
+  lend_out_date DATE
+);
+
+-- Create BOOK table
+CREATE TABLE BOOK (
+  isbn VARCHAR(20) PRIMARY KEY,
+  edition INT,
+  pages INT,
+  document_id INT REFERENCES DOCUMENT(document_id)
+);
+
+-- Create MAGAZINE table
+CREATE TABLE MAGAZINE (
+  isbn VARCHAR(20) PRIMARY KEY,
+  month INT,
+  document_id INT REFERENCES DOCUMENT(document_id)
+);
+
+-- Create JOURNAL_ARTICLE table
+CREATE TABLE JOURNAL_ARTICLE (
+  journal_id VARCHAR(100) PRIMARY KEY,
+  issue_number INT,
+  document_id INT REFERENCES DOCUMENT(document_id)
+);
+
+-- Create PUBLISHER table
+CREATE TABLE PUBLISHER (
+  name VARCHAR(100) PRIMARY KEY
+);
+
+-- Create AUTHOR table
+CREATE TABLE AUTHOR (
+  name VARCHAR(100) PRIMARY KEY
+);
+
+-- Create DOCUMENT_AUTHOR table
+CREATE TABLE DOCUMENT_AUTHOR (
+  document_id INT REFERENCES DOCUMENT(document_id),
+  author_name VARCHAR(100) REFERENCES AUTHOR(name),
+  PRIMARY KEY (document_id, author_name)
+);
+
+-- Create JOURNAL table
+CREATE TABLE JOURNAL (
+  journal_id VARCHAR(100) PRIMARY KEY,
+  name VARCHAR(255) NOT NULL
+);
+
+-- Create indexes
+CREATE INDEX idx_document_title ON DOCUMENT(title);
+CREATE INDEX idx_copy_document_id ON COPY(document_id);
+CREATE INDEX idx_book_document_id ON BOOK(document_id);
+CREATE INDEX idx_magazine_document_id ON MAGAZINE(document_id);
+CREATE INDEX idx_journal_article_document_id ON JOURNAL_ARTICLE(document_id);
+
+-- Example test data
+INSERT INTO LIBRARIAN (ssn, name, email, salary) VALUES 
+  ('123-45-6789', 'John Doe', 'john.doe@library.com', 50000),
+  ('987-65-4321', 'Jane Smith', 'jane.smith@library.com', 55000);
+
+INSERT INTO CLIENT (email, name, password) VALUES
+  ('alice@example.com', 'Alice', 'password123'),
+  ('bob@example.com', 'Bob', 'password456');
+
+INSERT INTO ADDRESS (street, city, state, zip, email) VALUES
+  ('123 Main St', 'New York', 'NY', '10001', 'alice@example.com'),
+  ('456 Elm St', 'Los Angeles', 'CA', '90001', 'bob@example.com');
+
+INSERT INTO CREDIT_CARD (card_number, expiration_date, email, address_id) VALUES
+  ('1234567890123456', '2025-12-31', 'alice@example.com', 1),
+  ('9876543210987654', '2024-06-30', 'bob@example.com', 2);
