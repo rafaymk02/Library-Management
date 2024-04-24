@@ -7,6 +7,9 @@ def librarian_dashboard(request):
     # Render the librarian dashboard template
     return render(request, 'library/librarian_dashboard.html')
 
+def home(request):
+    return render(request, 'home.html')
+
 def manage_documents(request):
     if request.method == 'POST':
         form = DocumentForm(request.POST)

@@ -2,6 +2,7 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
+    path('', views.home, name='home'),
     # Librarian URLs
     path('librarian/', views.librarian_dashboard, name='librarian_dashboard'),
     path('librarian/documents/', views.manage_documents, name='manage_documents'),

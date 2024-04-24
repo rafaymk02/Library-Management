@@ -12,10 +12,12 @@ class ClientForm(forms.ModelForm):
         fields = '__all__'
 
 class SearchForm(forms.Form):
-# Add search form fields based on your requirements
+    # Add search form fields based on your requirements
+    pass
 
 class BorrowForm(forms.Form):
-# Add borrow form fields based on your requirements
+    # Add borrow form fields based on your requirements
+    pass
 
 class OverdueFeeForm(forms.ModelForm):
     class Meta:
