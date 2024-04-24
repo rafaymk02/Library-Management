@@ -8,7 +8,7 @@ def librarian_dashboard(request):
     return render(request, 'library/librarian_dashboard.html')
 
 def home(request):
-    return render(request, 'home.html')
+    return render(request, 'library/home.html')
 
 def manage_documents(request):
     if request.method == 'POST':
