@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Update Client</title>
+</head>
+<body>
+<h1>Update Client</h1>
+<form method="POST" action="{% url 'update_client' client.email %}">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Update</button>
+</form>
+</body>
+</html>

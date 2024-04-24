@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Borrow Document</title>
+</head>
+<body>
+<h1>Borrow Document</h1>
+<p>Document: {{ document.title }}</p>
+<form method="POST" action="{% url 'borrow_document' document.id %}">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Borrow</button>
+</form>
+</body>
+</html>

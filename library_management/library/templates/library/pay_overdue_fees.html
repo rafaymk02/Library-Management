@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Pay Overdue Fees</title>
+</head>
+<body>
+<h1>Pay Overdue Fees</h1>
+<p>Total Overdue Fees: ${{ total_fees }}</p>
+<form method="POST" action="{% url 'pay_overdue_fees' %}">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Pay Fees</button>
+</form>
+</body>
+</html>
