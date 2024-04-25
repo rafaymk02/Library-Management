@@ -2,41 +2,6 @@
 <html>
 <head>
     <title>Register Client</title>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script>
-        $(document).ready(function() {
-            let addressCount = 1;
-            let creditCardCount = 1;
-
-            $('#add-address').click(function() {
-                addressCount++;
-                const addressForm = `
-                    <div>
-                        <label for="address_${addressCount}_address">Address ${addressCount}:</label>
-                        <input type="text" name="address_${addressCount}-address" id="address_${addressCount}_address" required>
-                    </div>
-                `;
-                $('#address-forms').append(addressForm);
-                $('#address-count').val(addressCount);
-            });
-
-            $('#add-credit-card').click(function() {
-                creditCardCount++;
-                const creditCardForm = `
-                    <div>
-                        <label for="credit_card_${creditCardCount}_card_number">Credit Card Number ${creditCardCount}:</label>
-                        <input type="text" name="credit_card_${creditCardCount}-card_number" id="credit_card_${creditCardCount}_card_number" required>
-                    </div>
-                    <div>
-                        <label for="credit_card_${creditCardCount}_expiration_date">Expiration Date ${creditCardCount}:</label>
-                        <input type="month" name="credit_card_${creditCardCount}-expiration_date" id="credit_card_${creditCardCount}_expiration_date" required>
-                    </div>
-                `;
-                $('#credit-card-forms').append(creditCardForm);
-                $('#credit-card-count').val(creditCardCount);
-            });
-        });
-    </script>
 </head>
 <body>
     <h1>Register Client</h1>
@@ -44,40 +9,28 @@
         {% csrf_token %}
         <div>
             <label for="email">Email:</label>
-            {{ client_form.email }}
+            {{ form.email }}
         </div>
         <div>
             <label for="name">Name:</label>
-            {{ client_form.name }}
+            {{ form.name }}
         </div>
         <div>
             <label for="password">Password:</label>
-            {{ client_form.password }}
+            {{ form.password }}
         </div>
-        <div id="address-forms">
-            {% for form in address_forms %}
-                <div>
-                    <label for="{{ form.address.id_for_label }}">Address {{ forloop.counter }}:</label>
-                    {{ form.address }}
-                </div>
-            {% endfor %}
+        <div>
+            <label for="address">Address:</label>
+            {{ form.address }}
         </div>
-        <button type="button" id="add-address">Add Address</button>
-        <input type="hidden" name="address_count" id="address-count" value="{{ address_forms|length }}">
-        <div id="credit-card-forms">
-            {% for form in credit_card_forms %}
-                <div>
-                    <label for="{{ form.card_number.id_for_label }}">Credit Card Number {{ forloop.counter }}:</label>
-                    {{ form.card_number }}
-                </div>
-                <div>
-                    <label for="{{ form.expiration_date.id_for_label }}">Expiration Date {{ forloop.counter }}:</label>
-                    {{ form.expiration_date }}
-                </div>
-            {% endfor %}
+        <div>
+            <label for="card_number">Credit Card Number:</label>
+            {{ form.card_number }}
         </div>
-        <button type="button" id="add-credit-card">Add Credit Card</button>
-        <input type="hidden" name="credit_card_count" id="credit-card-count" value="{{ credit_card_forms|length }}">
+        <div>
+            <label for="expiration_date">Expiration Date:</label>
+            {{ form.expiration_date }}
+        </div>
         <button type="submit">Register</button>
     </form>
 </body>

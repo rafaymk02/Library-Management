@@ -21,27 +21,33 @@
                     <h3>Addresses:</h3>
                     {% for address in client.address_set.all %}
                         <div>
-                            <label for="address_{{ forloop.counter }}_address">Address {{ forloop.counter }}:</label>
-                            <input type="text" name="address_{{ forloop.counter }}-address" value="{{ address.address }}">
+                            <label for="address_{{ forloop.counter }}">Address {{ forloop.counter }}:</label>
+                            <input type="text" name="address_{{ forloop.counter }}" value="{{ address.address }}">
                             <button type="submit" name="delete_address" value="{{ address.id }}">Delete</button>
                         </div>
                     {% endfor %}
+                    <div>
+                        <label for="new_address">New Address:</label>
+                        <input type="text" name="new_address">
+                        <button type="submit" name="add_address">Add Address</button>
+                    </div>
                     <h3>Credit Cards:</h3>
                     {% for credit_card in client.creditcard_set.all %}
                         <div>
-                            <label for="credit_card_{{ forloop.counter }}_card_number">Credit Card Number {{ forloop.counter }}:</label>
-                            <input type="text" name="credit_card_{{ forloop.counter }}-card_number" value="{{ credit_card.card_number }}">
-                            <label for="credit_card_{{ forloop.counter }}_expiration_date">Expiration Date {{ forloop.counter }}:</label>
-                            <input type="month" name="credit_card_{{ forloop.counter }}-expiration_date" value="{{ credit_card.expiration_date|date:'Y-m' }}">
-                            <label for="credit_card_{{ forloop.counter }}_payment_address">Payment Address {{ forloop.counter }}:</label>
-                            <select name="credit_card_{{ forloop.counter }}-payment_address">
-                                {% for address in client.address_set.all %}
-                                    <option value="{{ address.id }}" {% if address == credit_card.payment_address %}selected{% endif %}>{{ address.address }}</option>
-                                {% endfor %}
-                            </select>
+                            <label for="card_number_{{ forloop.counter }}">Credit Card Number {{ forloop.counter }}:</label>
+                            <input type="text" name="card_number_{{ forloop.counter }}" value="{{ credit_card.card_number }}">
+                            <label for="expiration_date_{{ forloop.counter }}">Expiration Date {{ forloop.counter }}:</label>
+                            <input type="month" name="expiration_date_{{ forloop.counter }}" value="{{ credit_card.expiration_date|date:'Y-m' }}">
                             <button type="submit" name="delete_credit_card" value="{{ credit_card.id }}">Delete</button>
                         </div>
                     {% endfor %}
+                    <div>
+                        <label for="new_card_number">New Credit Card Number:</label>
+                        <input type="text" name="new_card_number">
+                        <label for="new_expiration_date">New Expiration Date:</label>
+                        <input type="month" name="new_expiration_date">
+                        <button type="submit" name="add_credit_card">Add Credit Card</button>
+                    </div>
                     <button type="submit">Update</button>
                 </form>
             </li>

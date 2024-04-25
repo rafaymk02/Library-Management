@@ -7,28 +7,13 @@ class DocumentForm(forms.ModelForm):
         fields = '__all__'
 
 class ClientForm(forms.ModelForm):
+    address = forms.CharField(max_length=200)
+    card_number = forms.CharField(max_length=20)
+    expiration_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))
+
     class Meta:
         model = Client
-        fields = ['email', 'name', 'password']
-
-class AddressForm(forms.ModelForm):
-    class Meta:
-        model = Address
-        fields = ['address']
-
-class CreditCardForm(forms.ModelForm):
-    expiration_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'month'}))
-    payment_address = forms.ModelChoiceField(queryset=Address.objects.none())
-
-    class Meta:
-        model = CreditCard
-        fields = ['card_number', 'expiration_date', 'payment_address']
-
-    def __init__(self, *args, **kwargs):
-        client = kwargs.pop('client', None)
-        super().__init__(*args, **kwargs)
-        if client:
-            self.fields['payment_address'].queryset = client.address_set.all()
+        fields = ['email', 'name', 'password', 'address', 'card_number', 'expiration_date']
 
 class SearchForm(forms.Form):
     pass
