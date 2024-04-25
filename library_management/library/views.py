@@ -3,6 +3,9 @@ from .models import Document, Client, Librarian, Borrow, OverdueFee, CreditCard,
 from .forms import DocumentForm, ClientForm, SearchForm, BorrowForm, OverdueFeeForm, CreditCardForm
 from datetime import datetime
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth import authenticate, login
+
+
 
 def librarian_dashboard(request):
     librarian_id = request.session.get('librarian_id')
@@ -150,17 +153,19 @@ def pay_overdue_fees(request):
 
 @login_required
 def manage_payment_methods(request):
+    client = request.user.client
     if request.method == 'POST':
-        form = CreditCardForm(request.POST)
-        if form.is_valid():
-            credit_card = form.save(commit=False)
-            credit_card.client = request.user.client
-            credit_card.save()
-            return redirect('manage_payment_methods')
-    else:
-        form = CreditCardForm()
-        payment_methods = CreditCard.objects.filter(client=request.user.client)
-    return render(request, 'library/manage_payment_methods.html', {'form': form, 'payment_methods': payment_methods})
+        if 'add_payment_method' in request.POST:
+            card_number = request.POST.get('card_number')
+            expiration_date = request.POST.get('expiration_date')
+            payment_address = request.POST.get('payment_address')
+            CreditCard.objects.create(client=client, card_number=card_number, expiration_date=expiration_date, payment_address=payment_address)
+        elif 'delete_payment_method' in request.POST:
+            credit_card_id = request.POST.get('delete_payment_method')
+            CreditCard.objects.filter(id=credit_card_id, client=client).delete()
+        return redirect('manage_payment_methods')
+    payment_methods = CreditCard.objects.filter(client=client)
+    return render(request, 'library/manage_payment_methods.html', {'payment_methods': payment_methods})
 
 def librarian_login(request):
     if request.method == 'POST':
@@ -199,14 +204,11 @@ def client_login(request):
     if request.method == 'POST':
         email = request.POST.get('email')
         password = request.POST.get('password')
-        try:
-            client = Client.objects.get(email=email)
-            if client.password == password:
-                request.session['client_email'] = client.email
-                return redirect('client_dashboard')
-            else:
-                error_message = 'Invalid password'
-        except Client.DoesNotExist:
-            error_message = 'Client does not exist'
-        return render(request, 'library/client_login.html', {'error_message': error_message})
+        user = authenticate(request, username=email, password=password)
+        if user is not None:
+            login(request, user)
+            return redirect('client_dashboard')
+        else:
+            error_message = 'Invalid email or password'
+            return render(request, 'library/client_login.html', {'error_message': error_message})
     return render(request, 'library/client_login.html')

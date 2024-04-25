@@ -1,32 +1,36 @@
 <!DOCTYPE html>
 <html>
-  <head>
+<head>
     <title>Manage Payment Methods</title>
-  </head>
-  <body>
+</head>
+<body>
     <h1>Manage Payment Methods</h1>
+    <h2>Add Payment Method</h2>
     <form method="POST" action="{% url 'manage_payment_methods' %}">
-      {% csrf_token %} {{ form.as_p }}
-      <button type="submit">Add Payment Method</button>
+        {% csrf_token %}
+        <label for="card_number">Card Number:</label>
+        <input type="text" name="card_number" required>
+        <label for="expiration_date">Expiration Date:</label>
+        <input type="text" name="expiration_date" placeholder="YYYY-MM" required>
+        <label for="payment_address">Payment Address:</label>
+        <input type="text" name="payment_address" required>
+        <button type="submit" name="add_payment_method">Add</button>
     </form>
-    <hr />
-    <h2>Existing Payment Methods</h2>
+    <h2>Payment Methods</h2>
     <ul>
-      {% for payment_method in payment_methods %}
-      <li>
-        {{ payment_method.card_number }} - Expires: {{
-        payment_method.expiration_date }}
-        <form
-          method="POST"
-          action="{% url 'delete_payment_method' payment_method.id %}"
-        >
-          {% csrf_token %}
-          <button type="submit">Delete</button>
-        </form>
-      </li>
-      {% empty %}
-      <li>No payment methods found.</li>
-      {% endfor %}
+        {% for payment_method in payment_methods %}
+            <li>
+                Card Number: {{ payment_method.card_number }}
+                Expiration Date: {{ payment_method.expiration_date|date:"Y-m" }}
+                Payment Address: {{ payment_method.payment_address.address }}
+                <form method="POST" action="{% url 'manage_payment_methods' %}">
+                    {% csrf_token %}
+                    <button type="submit" name="delete_payment_method" value="{{ payment_method.id }}">Delete</button>
+                </form>
+            </li>
+        {% empty %}
+            <li>No payment methods found.</li>
+        {% endfor %}
     </ul>
-  </body>
+</body>
 </html>
