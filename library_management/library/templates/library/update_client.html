@@ -1,24 +1,24 @@
 <!DOCTYPE html>
 <html>
-<head>
+  <head>
     <title>Update Client</title>
-</head>
-<body>
-<h1>Update Client</h1>
-<ul>
-    {% for client in clients %}
-    <li>
+  </head>
+  <body>
+    <h1>Update Client</h1>
+    <ul>
+      {% for client in clients %}
+      <li>
         {{ client.name }} - {{ client.email }}
         <form method="POST" action="{% url 'update_client' %}">
-            {% csrf_token %}
-            <input type="hidden" name="client_email" value="{{ client.email }}">
-            {{ form.as_p }}
-            <button type="submit">Update</button>
+          {% csrf_token %}
+          <input type="hidden" name="client_email" value="{{ client.email }}" />
+          {{ form.as_p }}
+          <button type="submit">Update</button>
         </form>
-    </li>
-    {% empty %}
-    <li>No clients found.</li>
-    {% endfor %}
-</ul>
-</body>
+      </li>
+      {% empty %}
+      <li>No clients found.</li>
+      {% endfor %}
+    </ul>
+  </body>
 </html>

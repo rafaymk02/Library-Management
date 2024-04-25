@@ -1,34 +1,36 @@
 <!DOCTYPE html>
 <html>
-<head>
+  <head>
     <title>Librarian Registration</title>
-</head>
-<body>
+  </head>
+  <body>
     <h1>Librarian Registration</h1>
     <form method="post" action="{% url 'librarian_register' %}">
-        {% csrf_token %}
-        <div>
-            <label for="name">Name:</label>
-            <input type="text" name="name" required>
-        </div>
-        <div>
-            <label for="ssn">SSN:</label>
-            <input type="text" name="ssn" required>
-        </div>
-        <div>
-            <label for="email">Email:</label>
-            <input type="email" name="email" required>
-        </div>
-        <div>
-            <label for="password">Password:</label>
-            <input type="password" name="password" required>
-        </div>
-        <div>
-            <label for="salary">Salary:</label>
-            <input type="number" name="salary" step="0.01" required>
-        </div>
-        <button type="submit">Register</button>
+      {% csrf_token %}
+      <div>
+        <label for="name">Name:</label>
+        <input type="text" name="name" required />
+      </div>
+      <div>
+        <label for="ssn">SSN:</label>
+        <input type="text" name="ssn" required />
+      </div>
+      <div>
+        <label for="email">Email:</label>
+        <input type="email" name="email" required />
+      </div>
+      <div>
+        <label for="password">Password:</label>
+        <input type="password" name="password" required />
+      </div>
+      <div>
+        <label for="salary">Salary:</label>
+        <input type="number" name="salary" step="0.01" required />
+      </div>
+      <button type="submit">Register</button>
     </form>
-    <p>Already have an account? <a href="{% url 'librarian_login' %}">Login</a></p>
-</body>
+    <p>
+      Already have an account? <a href="{% url 'librarian_login' %}">Login</a>
+    </p>
+  </body>
 </html>

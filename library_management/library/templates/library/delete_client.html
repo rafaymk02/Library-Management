@@ -1,23 +1,23 @@
 <!DOCTYPE html>
 <html>
-<head>
+  <head>
     <title>Delete Client</title>
-</head>
-<body>
-<h1>Delete Client</h1>
-<ul>
-    {% for client in clients %}
-    <li>
+  </head>
+  <body>
+    <h1>Delete Client</h1>
+    <ul>
+      {% for client in clients %}
+      <li>
         {{ client.name }} - {{ client.email }}
         <form method="POST" action="{% url 'delete_client' %}">
-            {% csrf_token %}
-            <input type="hidden" name="client_email" value="{{ client.email }}">
-            <button type="submit">Delete</button>
+          {% csrf_token %}
+          <input type="hidden" name="client_email" value="{{ client.email }}" />
+          <button type="submit">Delete</button>
         </form>
-    </li>
-    {% empty %}
-    <li>No clients found.</li>
-    {% endfor %}
-</ul>
-</body>
+      </li>
+      {% empty %}
+      <li>No clients found.</li>
+      {% endfor %}
+    </ul>
+  </body>
 </html>

@@ -1,29 +1,32 @@
 <!DOCTYPE html>
 <html>
-<head>
+  <head>
     <title>Manage Payment Methods</title>
-</head>
-<body>
-<h1>Manage Payment Methods</h1>
-<form method="POST" action="{% url 'manage_payment_methods' %}">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Add Payment Method</button>
-</form>
-<hr>
-<h2>Existing Payment Methods</h2>
-<ul>
-    {% for payment_method in payment_methods %}
-    <li>
-        {{ payment_method.card_number }} - Expires: {{ payment_method.expiration_date }}
-        <form method="POST" action="{% url 'delete_payment_method' payment_method.id %}">
-            {% csrf_token %}
-            <button type="submit">Delete</button>
+  </head>
+  <body>
+    <h1>Manage Payment Methods</h1>
+    <form method="POST" action="{% url 'manage_payment_methods' %}">
+      {% csrf_token %} {{ form.as_p }}
+      <button type="submit">Add Payment Method</button>
+    </form>
+    <hr />
+    <h2>Existing Payment Methods</h2>
+    <ul>
+      {% for payment_method in payment_methods %}
+      <li>
+        {{ payment_method.card_number }} - Expires: {{
+        payment_method.expiration_date }}
+        <form
+          method="POST"
+          action="{% url 'delete_payment_method' payment_method.id %}"
+        >
+          {% csrf_token %}
+          <button type="submit">Delete</button>
         </form>
-    </li>
-    {% empty %}
-    <li>No payment methods found.</li>
-    {% endfor %}
-</ul>
-</body>
+      </li>
+      {% empty %}
+      <li>No payment methods found.</li>
+      {% endfor %}
+    </ul>
+  </body>
 </html>

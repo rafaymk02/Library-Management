@@ -59,8 +59,12 @@ def delete_client(request):
         return render(request, 'library/delete_client.html', {'clients': clients})
 
 def client_dashboard(request):
-    # Render the client dashboard template
-    return render(request, 'library/client_dashboard.html')
+    client_email = request.session.get('client_email')
+    if client_email:
+        client = Client.objects.get(email=client_email)
+        return render(request, 'library/client_dashboard.html', {'client': client})
+    else:
+        return redirect('client_login')
 
 def search_documents(request):
     if request.method == 'POST':
@@ -149,3 +153,19 @@ def librarian_register(request):
 def librarian_logout(request):
     del request.session['librarian_id']
     return redirect('librarian_login')
+
+def client_login(request):
+    if request.method == 'POST':
+        email = request.POST.get('email')
+        password = request.POST.get('password')
+        try:
+            client = Client.objects.get(email=email)
+            if client.password == password:
+                request.session['client_email'] = client.email
+                return redirect('client_dashboard')
+            else:
+                error_message = 'Invalid password'
+        except Client.DoesNotExist:
+            error_message = 'Client does not exist'
+        return render(request, 'library/client_login.html', {'error_message': error_message})
+    return render(request, 'library/client_login.html')

@@ -1,23 +1,22 @@
 <!DOCTYPE html>
 <html>
-<head>
+  <head>
     <title>Manage Documents</title>
-</head>
-<body>
-<h1>Manage Documents</h1>
-<form method="POST" action="{% url 'manage_documents' %}">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Save</button>
-</form>
-<hr>
-<h2>Existing Documents</h2>
-<ul>
-    {% for document in documents %}
-    <li>{{ document.title }} - Copies: {{ document.available_copies }}</li>
-    {% empty %}
-    <li>No documents found.</li>
-    {% endfor %}
-</ul>
-</body>
+  </head>
+  <body>
+    <h1>Manage Documents</h1>
+    <form method="POST" action="{% url 'manage_documents' %}">
+      {% csrf_token %} {{ form.as_p }}
+      <button type="submit">Save</button>
+    </form>
+    <hr />
+    <h2>Existing Documents</h2>
+    <ul>
+      {% for document in documents %}
+      <li>{{ document.title }} - Copies: {{ document.available_copies }}</li>
+      {% empty %}
+      <li>No documents found.</li>
+      {% endfor %}
+    </ul>
+  </body>
 </html>
