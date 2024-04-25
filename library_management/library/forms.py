@@ -9,7 +9,7 @@ class DocumentForm(forms.ModelForm):
 class ClientForm(forms.ModelForm):
     address = forms.CharField(max_length=200)
     card_number = forms.CharField(max_length=20)
-    expiration_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))
+    expiration_date = forms.CharField(max_length=7, widget=forms.TextInput(attrs={'placeholder': 'MM/YYYY'}))
 
     class Meta:
         model = Client

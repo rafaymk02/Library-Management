@@ -37,7 +37,7 @@
                             <label for="card_number_{{ forloop.counter }}">Credit Card Number {{ forloop.counter }}:</label>
                             <input type="text" name="card_number_{{ forloop.counter }}" value="{{ credit_card.card_number }}">
                             <label for="expiration_date_{{ forloop.counter }}">Expiration Date {{ forloop.counter }}:</label>
-                            <input type="month" name="expiration_date_{{ forloop.counter }}" value="{{ credit_card.expiration_date|date:'Y-m' }}">
+                            <input type="text" name="expiration_date_{{ forloop.counter }}" value="{{ credit_card.expiration_date|date:'Y-m' }}" placeholder="YYYY-MM">
                             <button type="submit" name="delete_credit_card" value="{{ credit_card.id }}">Delete</button>
                         </div>
                     {% endfor %}

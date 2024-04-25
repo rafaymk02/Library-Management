@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
 from .models import Document, Client, Librarian, Borrow, OverdueFee, CreditCard, Address
 from .forms import DocumentForm, ClientForm, SearchForm, BorrowForm, OverdueFeeForm, CreditCardForm
+from datetime import datetime
 from django.contrib.auth.decorators import login_required
 
 def librarian_dashboard(request):
@@ -35,9 +36,11 @@ def register_client(request):
             address = Address(client=client, address=form.cleaned_data['address'])
             address.save()
 
+            expiration_date_str = form.cleaned_data['expiration_date']
+            expiration_date = datetime.strptime(expiration_date_str, '%m/%Y').date()
+
             credit_card = CreditCard(client=client, card_number=form.cleaned_data['card_number'],
-                                     expiration_date=form.cleaned_data['expiration_date'],
-                                     payment_address=address)  # Assign the created address to the credit card
+                                     expiration_date=expiration_date, payment_address=address)
             credit_card.save()
 
             return redirect('librarian_dashboard')
@@ -64,7 +67,13 @@ def update_client(request):
         elif 'add_credit_card' in request.POST:
             new_card_number = request.POST.get('new_card_number')
             new_expiration_date = request.POST.get('new_expiration_date')
-            CreditCard.objects.create(client=client, card_number=new_card_number, expiration_date=new_expiration_date)
+            
+            expiration_date = datetime.strptime(new_expiration_date, '%Y-%m').date()
+            
+            # Get the client's first address as the payment address
+            payment_address = client.address_set.first()
+            
+            CreditCard.objects.create(client=client, card_number=new_card_number, expiration_date=expiration_date, payment_address=payment_address)
         else:
             client.name = request.POST.get('name')
             client.email = request.POST.get('email')
