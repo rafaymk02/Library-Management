@@ -1,13 +1,37 @@
 <!DOCTYPE html>
 <html>
-  <head>
+<head>
     <title>Register Client</title>
-  </head>
-  <body>
+</head>
+<body>
     <h1>Register Client</h1>
     <form method="POST" action="{% url 'register_client' %}">
-      {% csrf_token %} {{ form.as_p }}
-      <button type="submit">Register</button>
+        {% csrf_token %}
+        <div>
+            <label for="email">Email:</label>
+            {{ form.email }}
+        </div>
+        <div>
+            <label for="name">Name:</label>
+            {{ form.name }}
+        </div>
+        <div>
+            <label for="password">Password:</label>
+            {{ form.password }}
+        </div>
+        <div>
+            <label for="address">Address:</label>
+            {{ form.address }}
+        </div>
+        <div>
+            <label for="card_number">Credit Card Number:</label>
+            {{ form.card_number }}
+        </div>
+        <div>
+            <label for="expiration_date">Expiration Date:</label>
+            {{ form.expiration_date }}
+        </div>
+        <button type="submit">Register</button>
     </form>
-  </body>
+</body>
 </html>

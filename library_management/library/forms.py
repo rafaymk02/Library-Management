@@ -1,5 +1,5 @@
 from django import forms
-from .models import Document, Client, OverdueFee, CreditCard
+from .models import Document, Client, OverdueFee, CreditCard, Address
 
 class DocumentForm(forms.ModelForm):
     class Meta:
@@ -7,9 +7,13 @@ class DocumentForm(forms.ModelForm):
         fields = '__all__'
 
 class ClientForm(forms.ModelForm):
+    address = forms.CharField(max_length=200)
+    card_number = forms.CharField(max_length=20)
+    expiration_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))
+
     class Meta:
         model = Client
-        fields = '__all__'
+        fields = ['email', 'name', 'password', 'address', 'card_number', 'expiration_date']
 
 class SearchForm(forms.Form):
     # Add search form fields based on your requirements

@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from .models import Document, Client, Librarian, Borrow, OverdueFee, CreditCard
+from .models import Document, Client, Librarian, Borrow, OverdueFee, CreditCard, Address
 from .forms import DocumentForm, ClientForm, SearchForm, BorrowForm, OverdueFeeForm, CreditCardForm
 from django.contrib.auth.decorators import login_required
 
@@ -29,7 +29,16 @@ def register_client(request):
     if request.method == 'POST':
         form = ClientForm(request.POST)
         if form.is_valid():
-            form.save()
+            client = form.save(commit=False)
+            client.save()
+
+            address = Address(client=client, address=form.cleaned_data['address'])
+            address.save()
+
+            credit_card = CreditCard(client=client, card_number=form.cleaned_data['card_number'],
+                                     expiration_date=form.cleaned_data['expiration_date'], payment_address=address)
+            credit_card.save()
+
             return redirect('librarian_dashboard')
     else:
         form = ClientForm()
