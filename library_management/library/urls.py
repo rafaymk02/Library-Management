@@ -18,6 +18,7 @@ urlpatterns = [
     # Client URLs
     path('client/', views.client_dashboard, name='client_dashboard'),
     path('client/login/', views.client_login, name='client_login'),
+    path('client/logout/', views.client_logout, name='client_logout'),
     path('client/search/', views.search_documents, name='search_documents'),
     path('client/documents/<int:document_id>/borrow/', views.borrow_document, name='borrow_document'),
     path('client/borrows/<int:borrow_id>/return/', views.return_document, name='return_document'),

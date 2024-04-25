@@ -65,6 +65,10 @@ def client_dashboard(request):
         return render(request, 'library/client_dashboard.html', {'client': client})
     else:
         return redirect('client_login')
+    
+def client_logout(request):
+    del request.session['client_email']
+    return redirect('client_login')
 
 def search_documents(request):
     if request.method == 'POST':
