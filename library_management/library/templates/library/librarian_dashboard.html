@@ -4,12 +4,13 @@
     <title>Librarian Dashboard</title>
 </head>
 <body>
-<h1>Welcome, Librarian!</h1>
-<ul>
-    <li><a href="{% url 'manage_documents' %}">Manage Documents</a></li>
-    <li><a href="{% url 'register_client' %}">Register Client</a></li>
-    <li><a href="{% url 'update_client' %}">Update Client</a></li>
-    <li><a href="{% url 'delete_client' %}">Delete Client</a></li>
-</ul>
+    <h1>Welcome, {{ librarian.name }}!</h1>
+    <ul>
+        <li><a href="{% url 'manage_documents' %}">Manage Documents</a></li>
+        <li><a href="{% url 'register_client' %}">Register Client</a></li>
+        <li><a href="{% url 'update_client' %}">Update Client</a></li>
+        <li><a href="{% url 'delete_client' %}">Delete Client</a></li>
+    </ul>
+    <p><a href="{% url 'librarian_logout' %}">Logout</a></p>
 </body>
 </html>

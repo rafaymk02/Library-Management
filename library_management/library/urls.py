@@ -11,6 +11,9 @@ urlpatterns = [
     path('librarian/clients/register/', views.register_client, name='register_client'),
     path('librarian/clients/update/', views.update_client, name='update_client'),
     path('librarian/clients/delete/', views.delete_client, name='delete_client'),
+    path('librarian/login/', views.librarian_login, name='librarian_login'),
+    path('librarian/register/', views.librarian_register, name='librarian_register'),
+    path('librarian/logout/', views.librarian_logout, name='librarian_logout'),
 
     # Client URLs
     path('client/', views.client_dashboard, name='client_dashboard'),

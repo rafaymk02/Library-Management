@@ -4,8 +4,12 @@ from .forms import DocumentForm, ClientForm, SearchForm, BorrowForm, OverdueFeeF
 from django.contrib.auth.decorators import login_required
 
 def librarian_dashboard(request):
-    # Render the librarian dashboard template
-    return render(request, 'library/librarian_dashboard.html')
+    librarian_id = request.session.get('librarian_id')
+    if librarian_id:
+        librarian = Librarian.objects.get(ssn=librarian_id)
+        return render(request, 'library/librarian_dashboard.html', {'librarian': librarian})
+    else:
+        return redirect('librarian_login')
 
 def home(request):
     return render(request, 'library/home.html')
@@ -112,3 +116,36 @@ def manage_payment_methods(request):
         form = CreditCardForm()
         payment_methods = CreditCard.objects.filter(client=request.user.client)
     return render(request, 'library/manage_payment_methods.html', {'form': form, 'payment_methods': payment_methods})
+
+def librarian_login(request):
+    if request.method == 'POST':
+        email = request.POST.get('email')
+        password = request.POST.get('password')
+        try:
+            librarian = Librarian.objects.get(email=email)
+            if librarian.password == password:
+                request.session['librarian_id'] = librarian.ssn
+                return redirect('librarian_dashboard')
+            else:
+                error_message = 'Invalid password'
+        except Librarian.DoesNotExist:
+            error_message = 'Librarian does not exist'
+        return render(request, 'library/librarian_login.html', {'error_message': error_message})
+    return render(request, 'library/librarian_login.html')
+
+def librarian_register(request):
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        ssn = request.POST.get('ssn')
+        email = request.POST.get('email')
+        password = request.POST.get('password')
+        salary = request.POST.get('salary')
+        librarian = Librarian(ssn=ssn, name=name, email=email, password=password, salary=salary)
+        librarian.save()
+        request.session['librarian_id'] = librarian.ssn
+        return redirect('librarian_dashboard')
+    return render(request, 'library/librarian_register.html')
+
+def librarian_logout(request):
+    del request.session['librarian_id']
+    return redirect('librarian_login')
