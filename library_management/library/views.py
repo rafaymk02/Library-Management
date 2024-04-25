@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from .models import Document, Client, Librarian, Borrow, OverdueFee, CreditCard
 from .forms import DocumentForm, ClientForm, SearchForm, BorrowForm, OverdueFeeForm, CreditCardForm
-
+from django.contrib.auth.decorators import login_required
 
 def librarian_dashboard(request):
     # Render the librarian dashboard template
@@ -31,21 +31,28 @@ def register_client(request):
         form = ClientForm()
     return render(request, 'library/register_client.html', {'form': form})
 
-def update_client(request, client_email):
-    client = Client.objects.get(email=client_email)
+def update_client(request):
     if request.method == 'POST':
+        client_email = request.POST.get('client_email')
+        client = Client.objects.get(email=client_email)
         form = ClientForm(request.POST, instance=client)
         if form.is_valid():
             form.save()
             return redirect('librarian_dashboard')
     else:
-        form = ClientForm(instance=client)
-    return render(request, 'library/update_client.html', {'form': form})
+        clients = Client.objects.all()
+        form = ClientForm()
+        return render(request, 'library/update_client.html', {'clients': clients, 'form': form})
 
-def delete_client(request, client_email):
-    client = Client.objects.get(email=client_email)
-    client.delete()
-    return redirect('librarian_dashboard')
+def delete_client(request):
+    if request.method == 'POST':
+        client_email = request.POST.get('client_email')
+        client = Client.objects.get(email=client_email)
+        client.delete()
+        return redirect('librarian_dashboard')
+    else:
+        clients = Client.objects.all()
+        return render(request, 'library/delete_client.html', {'clients': clients})
 
 def client_dashboard(request):
     # Render the client dashboard template
@@ -92,13 +99,15 @@ def pay_overdue_fees(request):
         form = OverdueFeeForm()
     return render(request, 'library/pay_overdue_fees.html', {'form': form})
 
+@login_required
 def manage_payment_methods(request):
     if request.method == 'POST':
         form = CreditCardForm(request.POST)
         if form.is_valid():
-            # Process the addition/update of a payment method
-            # Render a success message or redirect to the manage payment methods page
-            pass
+            credit_card = form.save(commit=False)
+            credit_card.client = request.user.client
+            credit_card.save()
+            return redirect('manage_payment_methods')
     else:
         form = CreditCardForm()
         payment_methods = CreditCard.objects.filter(client=request.user.client)

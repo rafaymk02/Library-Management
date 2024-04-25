@@ -1,19 +1,18 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Update Client</title>
+    <title>Delete Client</title>
 </head>
 <body>
-<h1>Update Client</h1>
+<h1>Delete Client</h1>
 <ul>
     {% for client in clients %}
     <li>
         {{ client.name }} - {{ client.email }}
-        <form method="POST" action="{% url 'update_client' %}">
+        <form method="POST" action="{% url 'delete_client' %}">
             {% csrf_token %}
             <input type="hidden" name="client_email" value="{{ client.email }}">
-            {{ form.as_p }}
-            <button type="submit">Update</button>
+            <button type="submit">Delete</button>
         </form>
     </li>
     {% empty %}

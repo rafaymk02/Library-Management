@@ -5,10 +5,18 @@
 </head>
 <body>
 <h1>Welcome, Client!</h1>
+{% if request.user.is_authenticated %}
+<p>You are logged in as {{ request.user.username }}.</p>
 <ul>
     <li><a href="{% url 'search_documents' %}">Search Documents</a></li>
     <li><a href="{% url 'pay_overdue_fees' %}">Pay Overdue Fees</a></li>
     <li><a href="{% url 'manage_payment_methods' %}">Manage Payment Methods</a></li>
+    <!-- Add more client functionalities as needed -->
 </ul>
+<p><a href="{% url 'logout' %}">Logout</a></p>
+{% else %}
+<p>You are not logged in.</p>
+<p><a href="{% url 'login' %}">Login</a></p>
+{% endif %}
 </body>
 </html>
