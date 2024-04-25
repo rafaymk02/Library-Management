@@ -1,24 +1,53 @@
 <!DOCTYPE html>
 <html>
-  <head>
+<head>
     <title>Update Client</title>
-  </head>
-  <body>
+</head>
+<body>
     <h1>Update Client</h1>
     <ul>
-      {% for client in clients %}
-      <li>
-        {{ client.name }} - {{ client.email }}
-        <form method="POST" action="{% url 'update_client' %}">
-          {% csrf_token %}
-          <input type="hidden" name="client_email" value="{{ client.email }}" />
-          {{ form.as_p }}
-          <button type="submit">Update</button>
-        </form>
-      </li>
-      {% empty %}
-      <li>No clients found.</li>
-      {% endfor %}
+        {% for client in clients %}
+            <li>
+                {{ client.name }} - {{ client.email }}
+                <form method="POST" action="{% url 'update_client' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="client_email" value="{{ client.email }}">
+                    <label for="name">Name:</label>
+                    <input type="text" name="name" value="{{ client.name }}">
+                    <label for="email">Email:</label>
+                    <input type="email" name="email" value="{{ client.email }}">
+                    <label for="password">Password:</label>
+                    <input type="password" name="password">
+                    <h3>Addresses:</h3>
+                    {% for address in client.address_set.all %}
+                        <div>
+                            <label for="address_{{ forloop.counter }}_address">Address {{ forloop.counter }}:</label>
+                            <input type="text" name="address_{{ forloop.counter }}-address" value="{{ address.address }}">
+                            <button type="submit" name="delete_address" value="{{ address.id }}">Delete</button>
+                        </div>
+                    {% endfor %}
+                    <h3>Credit Cards:</h3>
+                    {% for credit_card in client.creditcard_set.all %}
+                        <div>
+                            <label for="credit_card_{{ forloop.counter }}_card_number">Credit Card Number {{ forloop.counter }}:</label>
+                            <input type="text" name="credit_card_{{ forloop.counter }}-card_number" value="{{ credit_card.card_number }}">
+                            <label for="credit_card_{{ forloop.counter }}_expiration_date">Expiration Date {{ forloop.counter }}:</label>
+                            <input type="month" name="credit_card_{{ forloop.counter }}-expiration_date" value="{{ credit_card.expiration_date|date:'Y-m' }}">
+                            <label for="credit_card_{{ forloop.counter }}_payment_address">Payment Address {{ forloop.counter }}:</label>
+                            <select name="credit_card_{{ forloop.counter }}-payment_address">
+                                {% for address in client.address_set.all %}
+                                    <option value="{{ address.id }}" {% if address == credit_card.payment_address %}selected{% endif %}>{{ address.address }}</option>
+                                {% endfor %}
+                            </select>
+                            <button type="submit" name="delete_credit_card" value="{{ credit_card.id }}">Delete</button>
+                        </div>
+                    {% endfor %}
+                    <button type="submit">Update</button>
+                </form>
+            </li>
+        {% empty %}
+            <li>No clients found.</li>
+        {% endfor %}
     </ul>
-  </body>
+</body>
 </html>

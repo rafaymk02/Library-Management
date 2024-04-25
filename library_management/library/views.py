@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 from .models import Document, Client, Librarian, Borrow, OverdueFee, CreditCard, Address
-from .forms import DocumentForm, ClientForm, SearchForm, BorrowForm, OverdueFeeForm, CreditCardForm
+from .forms import DocumentForm, ClientForm, SearchForm, BorrowForm, OverdueFeeForm, CreditCardForm, AddressForm
 from django.contrib.auth.decorators import login_required
 
 def librarian_dashboard(request):
@@ -27,35 +27,57 @@ def manage_documents(request):
 
 def register_client(request):
     if request.method == 'POST':
-        form = ClientForm(request.POST)
-        if form.is_valid():
-            client = form.save(commit=False)
-            client.save()
+        client_form = ClientForm(request.POST)
+        address_forms = [AddressForm(request.POST, prefix=f'address_{i}') for i in range(int(request.POST.get('address_count', 0)))]
+        credit_card_forms = [CreditCardForm(request.POST, prefix=f'credit_card_{i}') for i in range(int(request.POST.get('credit_card_count', 0)))]
 
-            address = Address(client=client, address=form.cleaned_data['address'])
-            address.save()
+        if client_form.is_valid() and all(form.is_valid() for form in address_forms) and all(form.is_valid() for form in credit_card_forms):
+            client = client_form.save()
 
-            credit_card = CreditCard(client=client, card_number=form.cleaned_data['card_number'],
-                                     expiration_date=form.cleaned_data['expiration_date'], payment_address=address)
-            credit_card.save()
+            for i, form in enumerate(address_forms):
+                address = form.save(commit=False)
+                address.client = client
+                address.save()
+
+            for i, form in enumerate(credit_card_forms):
+                credit_card = form.save(commit=False)
+                credit_card.client = client
+                credit_card.payment_address = form.cleaned_data['payment_address']
+                credit_card.save()
 
             return redirect('librarian_dashboard')
     else:
-        form = ClientForm()
-    return render(request, 'library/register_client.html', {'form': form})
+        client_form = ClientForm()
+        address_forms = [AddressForm(prefix=f'address_{i}') for i in range(1)]
+        credit_card_forms = [CreditCardForm(prefix=f'credit_card_{i}') for i in range(1)]
+
+    return render(request, 'library/register_client.html', {
+        'client_form': client_form,
+        'address_forms': address_forms,
+        'credit_card_forms': credit_card_forms,
+    })
 
 def update_client(request):
     if request.method == 'POST':
         client_email = request.POST.get('client_email')
         client = Client.objects.get(email=client_email)
-        form = ClientForm(request.POST, instance=client)
-        if form.is_valid():
-            form.save()
+        client_form = ClientForm(request.POST, instance=client)
+        address_forms = [AddressForm(request.POST, prefix=f'address_{i}', instance=address) for i, address in enumerate(client.address_set.all())]
+        credit_card_forms = [CreditCardForm(request.POST, prefix=f'credit_card_{i}', instance=credit_card, client=client) for i, credit_card in enumerate(client.credit_card_set.all())]
+
+        if client_form.is_valid() and all(form.is_valid() for form in address_forms) and all(form.is_valid() for form in credit_card_forms):
+            client_form.save()
+
+            for form in address_forms:
+                form.save()
+
+            for form in credit_card_forms:
+                form.save()
+
             return redirect('librarian_dashboard')
     else:
         clients = Client.objects.all()
-        form = ClientForm()
-        return render(request, 'library/update_client.html', {'clients': clients, 'form': form})
+        return render(request, 'library/update_client.html', {'clients': clients})
 
 def delete_client(request):
     if request.method == 'POST':
