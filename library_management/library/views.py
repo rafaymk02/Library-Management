@@ -211,4 +211,4 @@ def client_login(request):
         else:
             error_message = 'Invalid email or password'
             return render(request, 'library/client_login.html', {'error_message': error_message})
-    return render(request, 'library/client_login.html')
+    return render(request, 'library/client_login.html') 
