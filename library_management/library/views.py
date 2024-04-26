@@ -22,9 +22,11 @@ def manage_documents(request):
     if request.method == 'POST':
         document_type = request.POST.get('document_type')
         document_form = DocumentForm(request.POST)
+        is_electronic = request.POST.get('is_electronic', False)
         if document_form.is_valid():
             document = document_form.save(commit=False)
             document.type = document_type
+            document.is_electronic = is_electronic
             document.save()
             if document_type == 'Book':
                 book_form = BookForm(request.POST)
@@ -32,6 +34,7 @@ def manage_documents(request):
                     book = book_form.save(commit=False)
                     book.document = document
                     book.save()
+                    book_form.save_m2m()
             elif document_type == 'Magazine':
                 magazine_form = MagazineForm(request.POST)
                 if magazine_form.is_valid():
@@ -44,20 +47,19 @@ def manage_documents(request):
                     journal_article = journal_article_form.save(commit=False)
                     journal_article.document = document
                     journal_article.save()
+                    journal_article_form.save_m2m()
         return redirect('manage_documents')
     else:
         document_form = DocumentForm()
         book_form = BookForm()
         magazine_form = MagazineForm()
         journal_article_form = JournalArticleForm()
-        electronic_document_form = ElectronicDocumentForm()
         documents = Document.objects.all()
     return render(request, 'library/manage_documents.html', {
         'document_form': document_form,
         'book_form': book_form,
         'magazine_form': magazine_form,
         'journal_article_form': journal_article_form,
-        'electronic_document_form': electronic_document_form,
         'documents': documents
     })
 

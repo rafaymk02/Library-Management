@@ -1,36 +1,34 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <title>Manage Documents</title>
-</head>
-<body>
-<h1>Manage Documents</h1>
-<form method="POST" action="{% url 'manage_documents' %}">
-  {% csrf_token %}
-  <label for="document_type">Document Type:</label>
-  <select name="document_type" id="document_type">
-    <option value="Book">Book</option>
-    <option value="Magazine">Magazine</option>
-    <option value="JournalArticle">Journal Article</option>
-    <option value="ElectronicDocument">Electronic Document</option>
-  </select>
-  <div id="document_form">
-    {{ document_form.as_p }}
-  </div>
-  <div id="book_form" style="display: none;">
-    {{ book_form.as_p }}
-  </div>
-  <div id="magazine_form" style="display: none;">
-    {{ magazine_form.as_p }}
-  </div>
-  <div id="journal_article_form" style="display: none;">
-    {{ journal_article_form.as_p }}
-  </div>
-  <div id="electronic_document_form" style="display: none;">
-    {{ electronic_document_form.as_p }}
-  </div>
-  <button type="submit">Save</button>
-</form>
+  <head>
+    <title>Manage Documents</title>
+  </head>
+  <body>
+    <h1>Manage Documents</h1>
+    <form method="POST" action="{% url 'manage_documents' %}">
+      {% csrf_token %}
+      <label for="document_type">Document Type:</label>
+      <select name="document_type" id="document_type">
+        <option value="Book">Book</option>
+        <option value="Magazine">Magazine</option>
+        <option value="JournalArticle">Journal Article</option>
+      </select>
+      <div id="document_form">
+        {{ document_form.as_p }}
+        <label for="is_electronic">Electronic Document:</label>
+        <input type="checkbox" name="is_electronic" id="is_electronic">
+      </div>
+      <div id="book_form" style="display: none;">
+        {{ book_form.as_p }}
+      </div>
+      <div id="magazine_form" style="display: none;">
+        {{ magazine_form.as_p }}
+      </div>
+      <div id="journal_article_form" style="display: none;">
+        {{ journal_article_form.as_p }}
+      </div>
+      <button type="submit">Save</button>
+    </form>
 <hr />
 <h2>Existing Documents</h2>
 <ul>

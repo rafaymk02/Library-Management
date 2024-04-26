@@ -28,21 +28,26 @@ class Publisher(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=100)
 
+class Author(models.Model):
+    id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=100)
+
 class Document(models.Model):
     id = models.AutoField(primary_key=True)
     type = models.CharField(max_length=20, choices=[
         ('Book', 'Book'),
         ('Magazine', 'Magazine'),
-        ('JournalArticle', 'Journal Article'),
-        ('ElectronicDocument', 'Electronic Document')
+        ('JournalArticle', 'Journal Article')
     ])
     title = models.CharField(max_length=100)
     isbn = models.CharField(max_length=20)
     publisher = models.ForeignKey(Publisher, on_delete=models.CASCADE)
     year = models.IntegerField()
+    is_electronic = models.BooleanField(default=False)
 
 class Book(models.Model):
     document = models.OneToOneField(Document, on_delete=models.CASCADE, primary_key=True)
+    authors = models.ManyToManyField(Author)
     edition = models.CharField(max_length=20)
     pages = models.IntegerField()
 
@@ -53,13 +58,9 @@ class Magazine(models.Model):
 class JournalArticle(models.Model):
     document = models.OneToOneField(Document, on_delete=models.CASCADE, primary_key=True)
     journal_name = models.CharField(max_length=100)
+    authors = models.ManyToManyField(Author)
     issue = models.IntegerField()
     issue_number = models.IntegerField()
-
-class Author(models.Model):
-    id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=100)
-    documents = models.ManyToManyField(Document)
 
 class Copy(models.Model):
     id = models.AutoField(primary_key=True)
