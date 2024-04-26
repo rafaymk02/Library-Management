@@ -256,3 +256,14 @@ def client_login(request):
             error_message = 'Client does not exist'
         return render(request, 'library/client_login.html', {'error_message': error_message})
     return render(request, 'library/client_login.html')
+
+def update_document(request, document_id):
+    document = Document.objects.get(id=document_id)
+    if request.method == 'POST':
+        form = DocumentForm(request.POST, instance=document)
+        if form.is_valid():
+            form.save()
+            return redirect('manage_documents')
+    else:
+        form = DocumentForm(instance=document)
+    return render(request, 'library/update_document.html', {'form': form})
