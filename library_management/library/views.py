@@ -204,11 +204,14 @@ def client_login(request):
     if request.method == 'POST':
         email = request.POST.get('email')
         password = request.POST.get('password')
-        user = authenticate(request, username=email, password=password)
-        if user is not None:
-            login(request, user)
-            return redirect('client_dashboard')
-        else:
-            error_message = 'Invalid email or password'
-            return render(request, 'library/client_login.html', {'error_message': error_message})
-    return render(request, 'library/client_login.html') 
+        try:
+            client = Client.objects.get(email=email)
+            if client.password == password:
+                request.session['client_email'] = client.email
+                return redirect('client_dashboard')
+            else:
+                error_message = 'Invalid password'
+        except Client.DoesNotExist:
+            error_message = 'Client does not exist'
+        return render(request, 'library/client_login.html', {'error_message': error_message})
+    return render(request, 'library/client_login.html')
