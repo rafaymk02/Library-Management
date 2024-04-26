@@ -30,12 +30,16 @@ class Publisher(models.Model):
 
 class Document(models.Model):
     id = models.AutoField(primary_key=True)
-    type = models.CharField(max_length=20)
+    type = models.CharField(max_length=20, choices=[
+        ('Book', 'Book'),
+        ('Magazine', 'Magazine'),
+        ('JournalArticle', 'Journal Article'),
+        ('ElectronicDocument', 'Electronic Document')
+    ])
     title = models.CharField(max_length=100)
     isbn = models.CharField(max_length=20)
     publisher = models.ForeignKey(Publisher, on_delete=models.CASCADE)
     year = models.IntegerField()
-    available_copies = models.IntegerField()
 
 class Book(models.Model):
     document = models.OneToOneField(Document, on_delete=models.CASCADE, primary_key=True)

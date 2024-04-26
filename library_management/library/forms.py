@@ -1,10 +1,6 @@
 from django import forms
 from .models import Document, Client, OverdueFee, CreditCard, Address
-
-class DocumentForm(forms.ModelForm):
-    class Meta:
-        model = Document
-        fields = '__all__'
+from .models import Document, Book, Magazine, JournalArticle, Author, Publisher
 
 class ClientForm(forms.ModelForm):
     address = forms.CharField(max_length=200)
@@ -30,3 +26,32 @@ class CreditCardForm(forms.ModelForm):
     class Meta:
         model = CreditCard
         fields = '__all__'
+
+class DocumentForm(forms.ModelForm):
+    class Meta:
+        model = Document
+        fields = ['title', 'isbn', 'publisher', 'year']
+
+class BookForm(forms.ModelForm):
+    authors = forms.ModelMultipleChoiceField(queryset=Author.objects.all())
+
+    class Meta:
+        model = Book
+        fields = ['authors', 'edition', 'pages']
+
+class MagazineForm(forms.ModelForm):
+    class Meta:
+        model = Magazine
+        fields = ['month']
+
+class JournalArticleForm(forms.ModelForm):
+    authors = forms.ModelMultipleChoiceField(queryset=Author.objects.all())
+
+    class Meta:
+        model = JournalArticle
+        fields = ['journal_name', 'authors', 'issue', 'issue_number']
+
+class ElectronicDocumentForm(forms.ModelForm):
+    class Meta:
+        model = Document
+        fields = ['title', 'isbn', 'publisher', 'year']

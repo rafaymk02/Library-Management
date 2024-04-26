@@ -1,22 +1,57 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>Manage Documents</title>
-  </head>
-  <body>
-    <h1>Manage Documents</h1>
-    <form method="POST" action="{% url 'manage_documents' %}">
-      {% csrf_token %} {{ form.as_p }}
-      <button type="submit">Save</button>
-    </form>
-    <hr />
-    <h2>Existing Documents</h2>
-    <ul>
-      {% for document in documents %}
-      <li>{{ document.title }} - Copies: {{ document.available_copies }}</li>
-      {% empty %}
-      <li>No documents found.</li>
-      {% endfor %}
-    </ul>
-  </body>
+<head>
+  <title>Manage Documents</title>
+</head>
+<body>
+<h1>Manage Documents</h1>
+<form method="POST" action="{% url 'manage_documents' %}">
+  {% csrf_token %}
+  <label for="document_type">Document Type:</label>
+  <select name="document_type" id="document_type">
+    <option value="Book">Book</option>
+    <option value="Magazine">Magazine</option>
+    <option value="JournalArticle">Journal Article</option>
+    <option value="ElectronicDocument">Electronic Document</option>
+  </select>
+  <div id="document_form">
+    {{ document_form.as_p }}
+  </div>
+  <div id="book_form" style="display: none;">
+    {{ book_form.as_p }}
+  </div>
+  <div id="magazine_form" style="display: none;">
+    {{ magazine_form.as_p }}
+  </div>
+  <div id="journal_article_form" style="display: none;">
+    {{ journal_article_form.as_p }}
+  </div>
+  <div id="electronic_document_form" style="display: none;">
+    {{ electronic_document_form.as_p }}
+  </div>
+  <button type="submit">Save</button>
+</form>
+<hr />
+<h2>Existing Documents</h2>
+<ul>
+  {% for document in documents %}
+  <li>{{ document.title }} - Copies: {{ document.available_copies }}</li>
+  {% empty %}
+  <li>No documents found.</li>
+  {% endfor %}
+</ul>
+<script>
+  document.getElementById('document_type').addEventListener('change', function() {
+    var selectedType = this.value;
+    var forms = document.getElementsByTagName('div');
+    for (var i = 0; i < forms.length; i++) {
+      if (forms[i].id === selectedType.toLowerCase() + '_form') {
+        forms[i].style.display = 'block';
+      } else {
+        forms[i].style.display = 'none';
+      }
+    }
+  });
+</script>
+</body>
 </html>

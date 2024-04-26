@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 from .models import Document, Client, Librarian, Borrow, OverdueFee, CreditCard, Address
-from .forms import DocumentForm, ClientForm, SearchForm, BorrowForm, OverdueFeeForm, CreditCardForm
+from .forms import DocumentForm, ClientForm, SearchForm, BorrowForm, OverdueFeeForm, CreditCardForm, BookForm, MagazineForm, JournalArticleForm, ElectronicDocumentForm
 from datetime import datetime
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login
@@ -20,14 +20,46 @@ def home(request):
 
 def manage_documents(request):
     if request.method == 'POST':
-        form = DocumentForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('manage_documents')
+        document_type = request.POST.get('document_type')
+        document_form = DocumentForm(request.POST)
+        if document_form.is_valid():
+            document = document_form.save(commit=False)
+            document.type = document_type
+            document.save()
+            if document_type == 'Book':
+                book_form = BookForm(request.POST)
+                if book_form.is_valid():
+                    book = book_form.save(commit=False)
+                    book.document = document
+                    book.save()
+            elif document_type == 'Magazine':
+                magazine_form = MagazineForm(request.POST)
+                if magazine_form.is_valid():
+                    magazine = magazine_form.save(commit=False)
+                    magazine.document = document
+                    magazine.save()
+            elif document_type == 'JournalArticle':
+                journal_article_form = JournalArticleForm(request.POST)
+                if journal_article_form.is_valid():
+                    journal_article = journal_article_form.save(commit=False)
+                    journal_article.document = document
+                    journal_article.save()
+        return redirect('manage_documents')
     else:
-        form = DocumentForm()
+        document_form = DocumentForm()
+        book_form = BookForm()
+        magazine_form = MagazineForm()
+        journal_article_form = JournalArticleForm()
+        electronic_document_form = ElectronicDocumentForm()
         documents = Document.objects.all()
-    return render(request, 'library/manage_documents.html', {'form': form, 'documents': documents})
+    return render(request, 'library/manage_documents.html', {
+        'document_form': document_form,
+        'book_form': book_form,
+        'magazine_form': magazine_form,
+        'journal_article_form': journal_article_form,
+        'electronic_document_form': electronic_document_form,
+        'documents': documents
+    })
 
 def register_client(request):
     if request.method == 'POST':
@@ -151,21 +183,30 @@ def pay_overdue_fees(request):
         form = OverdueFeeForm()
     return render(request, 'library/pay_overdue_fees.html', {'form': form})
 
-@login_required
 def manage_payment_methods(request):
-    client = request.user.client
-    if request.method == 'POST':
-        if 'add_payment_method' in request.POST:
-            card_number = request.POST.get('card_number')
-            expiration_date = request.POST.get('expiration_date')
-            payment_address = request.POST.get('payment_address')
-            CreditCard.objects.create(client=client, card_number=card_number, expiration_date=expiration_date, payment_address=payment_address)
-        elif 'delete_payment_method' in request.POST:
-            credit_card_id = request.POST.get('delete_payment_method')
-            CreditCard.objects.filter(id=credit_card_id, client=client).delete()
-        return redirect('manage_payment_methods')
-    payment_methods = CreditCard.objects.filter(client=client)
-    return render(request, 'library/manage_payment_methods.html', {'payment_methods': payment_methods})
+    client_email = request.session.get('client_email')
+    if client_email:
+        client = Client.objects.get(email=client_email)
+        if request.method == 'POST':
+            if 'add_payment_method' in request.POST:
+                card_number = request.POST.get('card_number')
+                expiration_date_str = request.POST.get('expiration_date')
+                payment_address_str = request.POST.get('payment_address')
+
+                # Parse the expiration date in the "YYYY-MM" format
+                expiration_date = datetime.strptime(expiration_date_str, '%Y-%m').date()
+
+                payment_address = Address.objects.create(client=client, address=payment_address_str)
+
+                CreditCard.objects.create(client=client, card_number=card_number, expiration_date=expiration_date, payment_address=payment_address)
+            elif 'delete_payment_method' in request.POST:
+                credit_card_id = request.POST.get('delete_payment_method')
+                CreditCard.objects.filter(id=credit_card_id, client=client).delete()
+            return redirect('manage_payment_methods')
+        payment_methods = CreditCard.objects.filter(client=client)
+        return render(request, 'library/manage_payment_methods.html', {'payment_methods': payment_methods})
+    else:
+        return redirect('client_login')
 
 def librarian_login(request):
     if request.method == 'POST':

@@ -1,10 +1,8 @@
 from django.urls import path
 from . import views
-from django.contrib.auth import views as auth_views
 
 urlpatterns = [
     path('', views.home, name='home'),
-    path('login/', auth_views.LoginView.as_view(template_name='library/login.html'), name='login'),
     # Librarian URLs
     path('librarian/', views.librarian_dashboard, name='librarian_dashboard'),
     path('librarian/documents/', views.manage_documents, name='manage_documents'),
