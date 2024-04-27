@@ -29,12 +29,18 @@ class CreditCardForm(forms.ModelForm):
         fields = '__all__'
 
 class DocumentForm(forms.ModelForm):
+    publisher = forms.CharField(max_length=100)  # Add this line
+
     class Meta:
         model = Document
-        fields = ['title', 'isbn', 'publisher', 'year', 'is_electronic']
+        fields = ['title', 'isbn', 'year', 'is_electronic', 'publisher']  # Add 'publisher' to the fields
 
 class BookForm(forms.ModelForm):
-    authors = forms.ModelMultipleChoiceField(queryset=Author.objects.all())
+    authors = forms.ModelMultipleChoiceField(
+        queryset=Author.objects.all(),
+        widget=forms.CheckboxSelectMultiple,
+        required=False
+    )
     edition = forms.CharField(max_length=20)
 
     class Meta:

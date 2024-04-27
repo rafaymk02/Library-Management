@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from .models import Document, Client, Librarian, Borrow, OverdueFee, CreditCard, Address
+from .models import Document, Client, Librarian, Borrow, OverdueFee, CreditCard, Address, Publisher, Copy
 from .forms import DocumentForm, ClientForm, SearchForm, BorrowForm, OverdueFeeForm, CreditCardForm, BookForm, MagazineForm, JournalArticleForm, ElectronicDocumentForm
 from datetime import datetime
 from django.contrib.auth.decorators import login_required
@@ -22,19 +22,18 @@ def manage_documents(request):
     if request.method == 'POST':
         document_type = request.POST.get('document_type')
         document_form = DocumentForm(request.POST)
-        is_electronic = request.POST.get('is_electronic', False)
         if document_form.is_valid():
             document = document_form.save(commit=False)
             document.type = document_type
-            document.is_electronic = is_electronic
+            document.is_electronic = request.POST.get('is_electronic', False)
             document.save()
-            if document_type == 'Book':
-                book_form = BookForm(request.POST)
-                if book_form.is_valid():
-                    book = book_form.save(commit=False)
-                    book.document = document
-                    book.save()
-                    book_form.save_m2m()
+        if document_type == 'Book':
+            book_form = BookForm(request.POST)
+            if book_form.is_valid():
+                book = book_form.save(commit=False)
+                book.document = document
+                book.save()
+                book_form.save_m2m()  # Save the many-to-many relationship with authors
             elif document_type == 'Magazine':
                 magazine_form = MagazineForm(request.POST)
                 if magazine_form.is_valid():
@@ -48,19 +47,27 @@ def manage_documents(request):
                     journal_article.document = document
                     journal_article.save()
                     journal_article_form.save_m2m()
+            # Create copies of the document
+            num_copies = int(request.POST.get('num_copies', 1))
+            for _ in range(num_copies):
+                Copy.objects.create(document=document)
         return redirect('manage_documents')
     else:
         document_form = DocumentForm()
         book_form = BookForm()
         magazine_form = MagazineForm()
         journal_article_form = JournalArticleForm()
-        documents = Document.objects.all()
+
+    documents = Document.objects.all()
+    for document in documents:
+        document.available_copies = document.copy_set.filter(available=True).count()
+
     return render(request, 'library/manage_documents.html', {
         'document_form': document_form,
         'book_form': book_form,
         'magazine_form': magazine_form,
         'journal_article_form': journal_article_form,
-        'documents': documents
+        'documents': documents,
     })
 
 def register_client(request):
