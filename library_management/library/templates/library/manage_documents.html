@@ -39,6 +39,7 @@
   {% if document.available_copies > 0 %}
   <li>
     {{ document.title }} - Type: {{ document.get_type_display }} - Publisher: {{ document.publisher.name }} - Available Copies: {{ document.available_copies }}
+    <a href="{% url 'update_document' document.id %}"><button>Update</button></a>
   </li>
   {% endif %}
   {% empty %}
