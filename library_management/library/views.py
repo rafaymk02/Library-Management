@@ -20,15 +20,20 @@ def home(request):
 
 def manage_documents(request):
     if request.method == 'POST':
+        print(request.POST)
         document_type = request.POST.get('document_type')
+        print(document_type)
         document_form = DocumentForm(request.POST)
+        print(document_form)
         if document_form.is_valid():
             document = document_form.save(commit=False)
             document.type = document_type
             document.is_electronic = request.POST.get('is_electronic', False)
             document.save()
         if document_type == 'Book':
+            print('Book form is being processed')
             book_form = BookForm(request.POST)
+            print(book_form.is_valid())
             if book_form.is_valid():
                 book = book_form.save(commit=False)
                 book.document = document
@@ -53,6 +58,7 @@ def manage_documents(request):
                 Copy.objects.create(document=document)
         return redirect('manage_documents')
     else:
+        print("Received a non-Post request")
         document_form = DocumentForm()
         book_form = BookForm()
         magazine_form = MagazineForm()
@@ -69,6 +75,25 @@ def manage_documents(request):
         'journal_article_form': journal_article_form,
         'documents': documents,
     })
+
+def borrow_document(request, document_id):
+    document = Document.objects.get(id=document_id)
+    if request.method == 'POST':
+        form = BorrowForm(request.POST)
+        if form.is_valid():
+            # Process the borrowing of the document
+            # Render a success message or redirect to the client dashboard
+            pass
+    else:
+        form = BorrowForm()
+    return render(request, 'library/borrow_document.html', {'form': form, 'document': document})
+
+def return_document(request, borrow_id):
+    borrow = Borrow.objects.get(id=borrow_id)
+    # Process the return of the document
+    # Calculate overdue fees if applicable
+    # Render a success message or redirect to the client dashboard
+    pass
 
 def register_client(request):
     if request.method == 'POST':
@@ -161,25 +186,6 @@ def search_documents(request):
     else:
         form = SearchForm()
     return render(request, 'library/search_documents.html', {'form': form})
-
-def borrow_document(request, document_id):
-    document = Document.objects.get(id=document_id)
-    if request.method == 'POST':
-        form = BorrowForm(request.POST)
-        if form.is_valid():
-            # Process the borrowing of the document
-            # Render a success message or redirect to the client dashboard
-            pass
-    else:
-        form = BorrowForm()
-    return render(request, 'library/borrow_document.html', {'form': form, 'document': document})
-
-def return_document(request, borrow_id):
-    borrow = Borrow.objects.get(id=borrow_id)
-    # Process the return of the document
-    # Calculate overdue fees if applicable
-    # Render a success message or redirect to the client dashboard
-    pass
 
 def pay_overdue_fees(request):
     if request.method == 'POST':

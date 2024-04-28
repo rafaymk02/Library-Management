@@ -45,16 +45,35 @@
 </ul>
 <script>
   document.getElementById('document_type').addEventListener('change', function() {
-    var selectedType = this.value;
-    var forms = document.getElementsByTagName('div');
-    for (var i = 0; i < forms.length; i++) {
-      if (forms[i].id === selectedType.toLowerCase() + '_form') {
-        forms[i].style.display = 'block';
-      } else {
-        forms[i].style.display = 'none';
+      var selectedType = this.value;
+      var forms = document.getElementsByTagName('div');
+      for (var i = 0; i < forms.length; i++) {
+          if (forms[i].id === selectedType.toLowerCase() + '_form') {
+              forms[i].style.display = 'block';
+              // Enable all input elements in the active form
+              var inputs = forms[i].getElementsByTagName('input');
+              var selects = forms[i].getElementsByTagName('select');
+              for (var j = 0; j < inputs.length; j++) {
+                  inputs[j].disabled = false;
+              }
+              for (var j = 0; j < selects.length; j++) {
+                  selects[j].disabled = false;
+              }
+          } else {
+              forms[i].style.display = 'none';
+              // Disable all input elements in the hidden form
+              var inputs = forms[i].getElementsByTagName('input');
+              var selects = forms[i].getElementsByTagName('select');
+              for (var j = 0; j < inputs.length; j++) {
+                  inputs[j].disabled = true;
+              }
+              for (var j = 0; j < selects.length; j++) {
+                  selects[j].disabled = true;
+              }
+          }
       }
-    }
   });
 </script>
+
 </body>
 </html>
