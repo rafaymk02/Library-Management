@@ -14,10 +14,10 @@
     <option value="Magazine">Magazine</option>
     <option value="JournalArticle">Journal Article</option>
   </select>
-  <div id="document_form">
+  <div id="document_form" style="display:none;">
     {{ document_form.as_p }}
   </div>
-  <div id="book_form">
+  <div id="book_form" style="display:none;">
     {{ book_form.as_p }}
   </div>
   <div id="magazine_form" style="display: none;">
@@ -45,35 +45,34 @@
 </ul>
 <script>
   document.getElementById('document_type').addEventListener('change', function() {
-      var selectedType = this.value;
-      var forms = document.getElementsByTagName('div');
-      for (var i = 0; i < forms.length; i++) {
-          if (forms[i].id === selectedType.toLowerCase() + '_form') {
-              forms[i].style.display = 'block';
-              // Enable all input elements in the active form
-              var inputs = forms[i].getElementsByTagName('input');
-              var selects = forms[i].getElementsByTagName('select');
-              for (var j = 0; j < inputs.length; j++) {
-                  inputs[j].disabled = false;
-              }
-              for (var j = 0; j < selects.length; j++) {
-                  selects[j].disabled = false;
-              }
-          } else {
-              forms[i].style.display = 'none';
-              // Disable all input elements in the hidden form
-              var inputs = forms[i].getElementsByTagName('input');
-              var selects = forms[i].getElementsByTagName('select');
-              for (var j = 0; j < inputs.length; j++) {
-                  inputs[j].disabled = true;
-              }
-              for (var j = 0; j < selects.length; j++) {
-                  selects[j].disabled = true;
-              }
-          }
-      }
-  });
-</script>
+      var selectedType = this.value.toLowerCase(); // Ensures the value is in lower case
+      var forms = document.querySelectorAll('div[id$="_form"]'); // Selects all divs whose id ends with '_form'
 
+      forms.forEach(function(formDiv) {
+          if (formDiv.id === selectedType + '_form') {
+              formDiv.style.display = 'block';
+              enableInputs(formDiv);
+          } else {
+              formDiv.style.display = 'none';
+              disableInputs(formDiv);
+          }
+      });
+  });
+
+  function enableInputs(formDiv) {
+      var inputs = formDiv.querySelectorAll('input, select, textarea');
+      inputs.forEach(function(input) {
+          input.disabled = false;
+      });
+  }
+
+  function disableInputs(formDiv) {
+      var inputs = formDiv.querySelectorAll('input, select, textarea');
+      inputs.forEach(function(input) {
+          input.disabled = true;
+      });
+  }
+
+</script>
 </body>
 </html>

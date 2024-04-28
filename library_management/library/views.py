@@ -18,64 +18,6 @@ def librarian_dashboard(request):
 def home(request):
     return render(request, 'library/home.html')
 
-def manage_documents(request):
-    if request.method == 'POST':
-        print(request.POST)
-        document_type = request.POST.get('document_type')
-        print(document_type)
-        document_form = DocumentForm(request.POST)
-        print(document_form)
-        if document_form.is_valid():
-            document = document_form.save(commit=False)
-            document.type = document_type
-            document.is_electronic = request.POST.get('is_electronic', False)
-            document.save()
-        if document_type == 'Book':
-            print('Book form is being processed')
-            book_form = BookForm(request.POST)
-            print(book_form.is_valid())
-            if book_form.is_valid():
-                book = book_form.save(commit=False)
-                book.document = document
-                book.save()
-                book_form.save_m2m()  # Save the many-to-many relationship with authors
-            elif document_type == 'Magazine':
-                magazine_form = MagazineForm(request.POST)
-                if magazine_form.is_valid():
-                    magazine = magazine_form.save(commit=False)
-                    magazine.document = document
-                    magazine.save()
-            elif document_type == 'JournalArticle':
-                journal_article_form = JournalArticleForm(request.POST)
-                if journal_article_form.is_valid():
-                    journal_article = journal_article_form.save(commit=False)
-                    journal_article.document = document
-                    journal_article.save()
-                    journal_article_form.save_m2m()
-            # Create copies of the document
-            num_copies = int(request.POST.get('num_copies', 1))
-            for _ in range(num_copies):
-                Copy.objects.create(document=document)
-        return redirect('manage_documents')
-    else:
-        print("Received a non-Post request")
-        document_form = DocumentForm()
-        book_form = BookForm()
-        magazine_form = MagazineForm()
-        journal_article_form = JournalArticleForm()
-
-    documents = Document.objects.all()
-    for document in documents:
-        document.available_copies = document.copy_set.filter(available=True).count()
-
-    return render(request, 'library/manage_documents.html', {
-        'document_form': document_form,
-        'book_form': book_form,
-        'magazine_form': magazine_form,
-        'journal_article_form': journal_article_form,
-        'documents': documents,
-    })
-
 def borrow_document(request, document_id):
     document = Document.objects.get(id=document_id)
     if request.method == 'POST':
@@ -136,12 +78,12 @@ def update_client(request):
         elif 'add_credit_card' in request.POST:
             new_card_number = request.POST.get('new_card_number')
             new_expiration_date = request.POST.get('new_expiration_date')
-            
+
             expiration_date = datetime.strptime(new_expiration_date, '%Y-%m').date()
-            
+
             # Get the client's first address as the payment address
             payment_address = client.address_set.first()
-            
+
             CreditCard.objects.create(client=client, card_number=new_card_number, expiration_date=expiration_date, payment_address=payment_address)
         else:
             client.name = request.POST.get('name')
@@ -171,11 +113,11 @@ def client_dashboard(request):
         return render(request, 'library/client_dashboard.html', {'client': client})
     else:
         return redirect('client_login')
-    
+
 def client_logout(request):
     del request.session['client_email']
     return redirect('client_login')
-
+    
 def search_documents(request):
     if request.method == 'POST':
         form = SearchForm(request.POST)
@@ -222,6 +164,66 @@ def manage_payment_methods(request):
         return render(request, 'library/manage_payment_methods.html', {'payment_methods': payment_methods})
     else:
         return redirect('client_login')
+
+def manage_documents(request):
+    if request.method == 'POST':
+        print(request.POST)
+        document_type = request.POST.get('document_type')
+        print("DEBUG: document_type = " + document_type)
+        document_form = DocumentForm(request.POST)
+        print("DEBUG: document_form = ")
+        print(document_form)
+        if document_form.is_valid():
+            document = document_form.save(commit=False)
+            document.type = document_type
+            document.is_electronic = request.POST.get('is_electronic', False)
+            document.save()
+        if document_type == 'Book':
+            print('DEBUG: Book form is being processed')
+            book_form = BookForm(request.POST)
+            print("DEBUG: book_form.is_valid() = ")
+            print(book_form.is_valid())
+            if book_form.is_valid():
+                book = book_form.save(commit=False)
+                book.document = document
+                book.save()
+                book_form.save_m2m()  # Save the many-to-many relationship with authors
+        elif document_type == 'Magazine':
+            magazine_form = MagazineForm(request.POST)
+            if magazine_form.is_valid():
+                magazine = magazine_form.save(commit=False)
+                magazine.document = document
+                magazine.save()
+        elif document_type == 'JournalArticle':
+            journal_article_form = JournalArticleForm(request.POST)
+            if journal_article_form.is_valid():
+                journal_article = journal_article_form.save(commit=False)
+                journal_article.document = document
+                journal_article.save()
+                journal_article_form.save_m2m()
+            # Create copies of the document
+        num_copies = int(request.POST.get('num_copies', 1))
+        for _ in range(num_copies):
+            Copy.objects.create(document=document)
+        return redirect('manage_documents')
+    else:
+        print("Received a non-Post request")
+        document_form = DocumentForm()
+        book_form = BookForm()
+        magazine_form = MagazineForm()
+        journal_article_form = JournalArticleForm()
+
+    documents = Document.objects.all()
+    for document in documents:
+        document.available_copies = document.copy_set.filter(available=True).count()
+
+    return render(request, 'library/manage_documents.html', {
+        'document_form': document_form,
+        'book_form': book_form,
+        'magazine_form': magazine_form,
+        'journal_article_form': journal_article_form,
+        'documents': documents,
+    })
 
 def librarian_login(request):
     if request.method == 'POST':
