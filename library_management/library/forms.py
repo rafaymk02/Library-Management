@@ -13,7 +13,12 @@ class ClientForm(forms.ModelForm):
         fields = ['email', 'name', 'password', 'address', 'card_number', 'expiration_date']
 
 class SearchForm(forms.Form):
-    pass
+    title = forms.CharField(required=False, label="Title")
+    title_search_type = forms.ChoiceField(choices=[('contains', 'Contains'), ('exact', 'Exact'), ('startswith', 'Starts With')], required=False, label="Title Search Type")
+    publisher_name = forms.CharField(required=False, label="Publisher Name")
+    publisher_search_type = forms.ChoiceField(choices=[('contains', 'Contains'), ('exact', 'Exact'), ('startswith', 'Starts With')], required=False, label="Publisher Search Type")
+    year = forms.IntegerField(required=False, label="Year")
+    search_logic = forms.ChoiceField(choices=[('AND', 'AND'), ('OR', 'OR')], initial='AND', label="Search Logic")
 
 class BorrowForm(forms.Form):
     pass
@@ -41,7 +46,6 @@ class DocumentForm(forms.ModelForm):
         if document_instance:
             # Set initial value for available copies
             self.fields['available_copies'].initial = Copy.objects.filter(document=document_instance, available=True).count()
-
 
 class BookForm(forms.ModelForm):
     authors = forms.ModelMultipleChoiceField(queryset=Author.objects.all(), required=False)
@@ -85,8 +89,6 @@ class BookForm(forms.ModelForm):
 
         return instance
 
-
-
 class MagazineForm(forms.ModelForm):
     class Meta:
         model = Magazine
@@ -123,9 +125,6 @@ class MagazineForm(forms.ModelForm):
                     Copy.objects.create(document=document_instance, available=True)
 
         return instance
-
-
-
 
 class JournalArticleForm(forms.ModelForm):
     authors = forms.ModelMultipleChoiceField(queryset=Author.objects.all(), required=False)
@@ -168,8 +167,6 @@ class JournalArticleForm(forms.ModelForm):
                     Copy.objects.create(document=document_instance, available=True)
 
         return instance
-
-
 
 class ElectronicDocumentForm(forms.ModelForm):
     class Meta:
