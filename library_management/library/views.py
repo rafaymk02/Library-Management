@@ -171,6 +171,7 @@ def search_documents(request):
 
     return render(request, 'library/search_documents.html', {'form': form})
 
+
 def pay_overdue_fees(request):
     if request.method == 'POST':
         form = OverdueFeeForm(request.POST)
