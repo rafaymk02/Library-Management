@@ -5,6 +5,7 @@ from datetime import datetime
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login
 from django.db.models import Count, Q
+from django.shortcuts import get_object_or_404
 import logging
 
 logger = logging.getLogger(__name__)
@@ -283,12 +284,28 @@ def client_login(request):
     return render(request, 'library/client_login.html')
 
 def update_document(request, document_id):
-    document = Document.objects.get(id=document_id)
+    document = get_object_or_404(Document, id=document_id)
+
+    # Determine the type and select the correct form
+    if hasattr(document, 'book'):
+        document_specific_instance = document.book
+        DocumentSpecificForm = BookForm
+    elif hasattr(document, 'magazine'):
+        document_specific_instance = document.magazine
+        DocumentSpecificForm = MagazineForm
+    elif hasattr(document, 'journalarticle'):
+        document_specific_instance = document.journalarticle
+        DocumentSpecificForm = JournalArticleForm
+    else:
+        document_specific_instance = document
+        DocumentSpecificForm = DocumentForm
+
     if request.method == 'POST':
-        form = DocumentForm(request.POST, instance=document)
+        form = DocumentSpecificForm(request.POST, instance=document_specific_instance)
         if form.is_valid():
             form.save()
             return redirect('manage_documents')
     else:
-        form = DocumentForm(instance=document)
+        form = DocumentSpecificForm(instance=document_specific_instance)
+
     return render(request, 'library/update_document.html', {'form': form})
