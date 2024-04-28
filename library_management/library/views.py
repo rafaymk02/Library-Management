@@ -121,16 +121,54 @@ def client_dashboard(request):
 def client_logout(request):
     del request.session['client_email']
     return redirect('client_login')
-    
+
 def search_documents(request):
     if request.method == 'POST':
         form = SearchForm(request.POST)
         if form.is_valid():
-            # Perform the search based on the form data
-            # Render the search results template with the matching documents
-            pass
+            title = form.cleaned_data.get('title')
+            title_search_type = form.cleaned_data.get('title_search_type')
+            publisher_name = form.cleaned_data.get('publisher_name')
+            publisher_search_type = form.cleaned_data.get('publisher_search_type')
+            year = form.cleaned_data.get('year')
+            search_logic = form.cleaned_data.get('search_logic')
+
+            queries = []
+            if title:
+                if title_search_type == 'contains':
+                    queries.append(Q(title__icontains=title))
+                elif title_search_type == 'exact':
+                    queries.append(Q(title__iexact=title))
+                elif title_search_type == 'startswith':
+                    queries.append(Q(title__istartswith=title))
+
+            if publisher_name:
+                if publisher_search_type == 'contains':
+                    queries.append(Q(publisher__name__icontains=publisher_name))
+                elif publisher_search_type == 'exact':
+                    queries.append(Q(publisher__name__iexact=publisher_name))
+                elif publisher_search_type == 'startswith':
+                    queries.append(Q(publisher__name__istartswith=publisher_name))
+
+            if year:
+                queries.append(Q(year=year))
+
+            final_query = queries.pop(0) if queries else Q()
+            for query in queries:
+                if search_logic == 'AND':
+                    final_query &= query
+                else:
+                    final_query |= query
+
+            # Annotate each document with the count of available copies
+            documents = Document.objects.filter(final_query).annotate(
+                available_copies=Count('copy', filter=Q(copy__available=True))
+            ).filter(available_copies__gt=0)
+
+            return render(request, 'library/search_documents.html', {'form': form, 'documents': documents})
     else:
         form = SearchForm()
+
     return render(request, 'library/search_documents.html', {'form': form})
 
 def pay_overdue_fees(request):

@@ -1,29 +1,27 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>Search Documents</title>
-  </head>
-  <body>
-    <h1>Search Documents</h1>
-    <form method="GET" action="{% url 'search_documents' %}">
-      <input type="text" name="query" placeholder="Enter search query" />
-      <button type="submit">Search</button>
-    </form>
-    <hr />
-    <h2>Search Results</h2>
-    <ul>
-      {% for document in documents %}
-      <li>
-        {{ document.title }} - Available Copies: {{ document.available_copies }}
-        {% if document.available_copies > 0 %}
-        <a href="{% url 'borrow_document' document.id %}">Borrow</a>
-        {% else %}
-        <span>No copies available</span>
-        {% endif %}
-      </li>
-      {% empty %}
-      <li>No documents found.</li>
-      {% endfor %}
-    </ul>
-  </body>
+<head>
+  <title>Search Documents</title>
+</head>
+<body>
+<h1>Search Documents</h1>
+<form method="POST" action="">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit">Search</button>
+</form>
+<hr />
+<h2>Search Results</h2>
+<ul>
+  {% if documents %}
+  {% for document in documents %}
+  <li>
+    {{ document.title }} - Type: {{ document.get_type_display }} - Publisher: {{ document.publisher.name }} - Available Copies: {{ document.available_copies }}
+  </li>
+  {% endfor %}
+  {% else %}
+  <li>No documents found.</li>
+  {% endif %}
+</ul>
+</body>
 </html>
