@@ -36,9 +36,11 @@
 <h2>Existing Documents</h2>
 <ul>
   {% for document in documents %}
+  {% if document.available_copies > 0 %}
   <li>
     {{ document.title }} - Type: {{ document.get_type_display }} - Publisher: {{ document.publisher.name }} - Available Copies: {{ document.available_copies }}
   </li>
+  {% endif %}
   {% empty %}
   <li>No documents found.</li>
   {% endfor %}

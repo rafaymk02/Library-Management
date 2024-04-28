@@ -4,7 +4,10 @@ from .forms import DocumentForm, ClientForm, SearchForm, BorrowForm, OverdueFeeF
 from datetime import datetime
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login
+from django.db.models import Count, Q
+import logging
 
+logger = logging.getLogger(__name__)
 
 
 def librarian_dashboard(request):
@@ -167,63 +170,68 @@ def manage_payment_methods(request):
 
 def manage_documents(request):
     if request.method == 'POST':
-        print(request.POST)
-        document_type = request.POST.get('document_type')
-        print("DEBUG: document_type = " + document_type)
         document_form = DocumentForm(request.POST)
-        print("DEBUG: document_form = ")
-        print(document_form)
+        logger.debug("Received POST request with data: %s", request.POST)
         if document_form.is_valid():
             document = document_form.save(commit=False)
-            document.type = document_type
-            document.is_electronic = request.POST.get('is_electronic', False)
+            document_type = request.POST.get('document_type')
+            document.is_electronic = request.POST.get('is_electronic', 'off') == 'on'
             document.save()
-        if document_type == 'Book':
-            print('DEBUG: Book form is being processed')
-            book_form = BookForm(request.POST)
-            print("DEBUG: book_form.is_valid() = ")
-            print(book_form.is_valid())
-            if book_form.is_valid():
-                book = book_form.save(commit=False)
-                book.document = document
-                book.save()
-                book_form.save_m2m()  # Save the many-to-many relationship with authors
-        elif document_type == 'Magazine':
-            magazine_form = MagazineForm(request.POST)
-            if magazine_form.is_valid():
-                magazine = magazine_form.save(commit=False)
-                magazine.document = document
-                magazine.save()
-        elif document_type == 'JournalArticle':
-            journal_article_form = JournalArticleForm(request.POST)
-            if journal_article_form.is_valid():
-                journal_article = journal_article_form.save(commit=False)
-                journal_article.document = document
-                journal_article.save()
-                journal_article_form.save_m2m()
-            # Create copies of the document
-        num_copies = int(request.POST.get('num_copies', 1))
-        for _ in range(num_copies):
-            Copy.objects.create(document=document)
-        return redirect('manage_documents')
+
+            if document_type == 'Book':
+                book_form = BookForm(request.POST)
+                if book_form.is_valid():
+                    book = book_form.save(commit=False)
+                    book.document = document
+                    book.save()
+                    book_form.save_m2m()
+                else:
+                    print(book_form.errors)  # Print errors to the console
+
+            elif document_type == 'Magazine':
+                magazine_form = MagazineForm(request.POST)
+                if magazine_form.is_valid():
+                    magazine = magazine_form.save(commit=False)
+                    magazine.document = document
+                    magazine.save()
+
+            elif document_type == 'JournalArticle':
+                journal_article_form = JournalArticleForm(request.POST)
+                if journal_article_form.is_valid():
+                    journal_article = journal_article_form.save(commit=False)
+                    journal_article.document = document
+                    journal_article.save()
+                    journal_article_form.save_m2m()
+
+            num_copies = int(request.POST.get('num_copies', 1))
+            # Assuming Copy is defined correctly elsewhere in your models
+            for _ in range(num_copies):
+                Copy.objects.create(document=document)
+
+            return redirect('manage_documents')  # Redirect to a safe URL
+
+        else:
+            print(document_form.errors)  # Print document form errors
+
     else:
-        print("Received a non-Post request")
         document_form = DocumentForm()
         book_form = BookForm()
         magazine_form = MagazineForm()
         journal_article_form = JournalArticleForm()
 
-    documents = Document.objects.all()
-    for document in documents:
-        document.available_copies = document.copy_set.filter(available=True).count()
+    documents = Document.objects.annotate(
+        available_copies=Count('copy', filter=Q(copy__available=True))
+    )
 
-    return render(request, 'library/manage_documents.html', {
+    context = {
         'document_form': document_form,
         'book_form': book_form,
         'magazine_form': magazine_form,
         'journal_article_form': journal_article_form,
         'documents': documents,
-    })
+    }
+    return render(request, 'library/manage_documents.html', context)
+
 
 def librarian_login(request):
     if request.method == 'POST':
