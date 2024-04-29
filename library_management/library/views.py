@@ -4,11 +4,9 @@ from .forms import DocumentForm, ClientForm, SearchForm, BorrowForm, OverdueFeeF
 from datetime import datetime
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login
-from django.db.models import Count, Q
+from django.db.models import Count, Q, When, Case, Value, BooleanField
 from django.shortcuts import get_object_or_404
-import logging
-
-logger = logging.getLogger(__name__)
+from django.utils import timezone
 
 
 def librarian_dashboard(request):
@@ -23,23 +21,39 @@ def home(request):
     return render(request, 'library/home.html')
 
 def borrow_document(request, document_id):
-    document = Document.objects.get(id=document_id)
+    # Directly use the email from the session to handle client identification
+    client_email = request.session.get('client_email')
+    if not client_email:
+        return redirect('client_login')  # Redirect to login if no client email in session
+
+    document = get_object_or_404(Document, id=document_id)
+    # Fetch the client using the email from the session
+    client = Client.objects.get(email=client_email)
+
     if request.method == 'POST':
-        form = BorrowForm(request.POST)
-        if form.is_valid():
-            # Process the borrowing of the document
-            # Render a success message or redirect to the client dashboard
-            pass
-    else:
-        form = BorrowForm()
-    return render(request, 'library/borrow_document.html', {'form': form, 'document': document})
+        copy = Copy.objects.filter(document=document, available=True).first()
+        if copy:
+            copy.available = False
+            copy.save()
+            Borrow.objects.create(
+                client=client,
+                copy=copy,
+                borrow_date=timezone.now(),
+                due_date=timezone.now() + timezone.timedelta(days=14)
+            )
+            return redirect('search_documents')  # Redirect back to the search documents page
+    return redirect('search_documents')
 
 def return_document(request, borrow_id):
-    borrow = Borrow.objects.get(id=borrow_id)
-    # Process the return of the document
-    # Calculate overdue fees if applicable
-    # Render a success message or redirect to the client dashboard
-    pass
+    if request.method == 'POST':
+        borrow = get_object_or_404(Borrow, id=borrow_id, return_date__isnull=True)  # Ensure the borrow is active
+        borrow.return_date = timezone.now()
+        borrow.save()
+        borrow.copy.available = True
+        borrow.copy.save()
+        return redirect('search_documents')
+    return redirect('search_documents')
+
 
 def register_client(request):
     if request.method == 'POST':
@@ -122,54 +136,70 @@ def client_logout(request):
     del request.session['client_email']
     return redirect('client_login')
 
+from django.db.models import Q, Count
+
 def search_documents(request):
-    if request.method == 'POST':
-        form = SearchForm(request.POST)
-        if form.is_valid():
-            title = form.cleaned_data.get('title')
-            title_search_type = form.cleaned_data.get('title_search_type')
-            publisher_name = form.cleaned_data.get('publisher_name')
-            publisher_search_type = form.cleaned_data.get('publisher_search_type')
-            year = form.cleaned_data.get('year')
-            search_logic = form.cleaned_data.get('search_logic')
+    form = SearchForm(request.POST or None)
 
-            queries = []
-            if title:
-                if title_search_type == 'contains':
-                    queries.append(Q(title__icontains=title))
-                elif title_search_type == 'exact':
-                    queries.append(Q(title__iexact=title))
-                elif title_search_type == 'startswith':
-                    queries.append(Q(title__istartswith=title))
+    if request.method == 'POST' and form.is_valid():
+        title = form.cleaned_data.get('title')
+        title_search_type = form.cleaned_data.get('title_search_type')
+        publisher_name = form.cleaned_data.get('publisher_name')
+        publisher_search_type = form.cleaned_data.get('publisher_search_type')
+        year = form.cleaned_data.get('year')
+        search_logic = form.cleaned_data.get('search_logic')
 
-            if publisher_name:
-                if publisher_search_type == 'contains':
-                    queries.append(Q(publisher__name__icontains=publisher_name))
-                elif publisher_search_type == 'exact':
-                    queries.append(Q(publisher__name__iexact=publisher_name))
-                elif publisher_search_type == 'startswith':
-                    queries.append(Q(publisher__name__istartswith=publisher_name))
+        queries = []
+        if title:
+            if title_search_type == 'contains':
+                queries.append(Q(title__icontains=title))
+            elif title_search_type == 'exact':
+                queries.append(Q(title__iexact=title))
+            elif title_search_type == 'startswith':
+                queries.append(Q(title__istartswith=title))
 
-            if year:
-                queries.append(Q(year=year))
+        if publisher_name:
+            if publisher_search_type == 'contains':
+                queries.append(Q(publisher__name__icontains=publisher_name))
+            elif publisher_search_type == 'exact':
+                queries.append(Q(publisher__name__iexact=publisher_name))
+            elif publisher_search_type == 'startswith':
+                queries.append(Q(publisher__name__istartswith=publisher_name))
 
-            final_query = queries.pop(0) if queries else Q()
-            for query in queries:
-                if search_logic == 'AND':
-                    final_query &= query
-                else:
-                    final_query |= query
+        if year:
+            queries.append(Q(year=year))
 
-            # Annotate each document with the count of available copies
-            documents = Document.objects.filter(final_query).annotate(
-                available_copies=Count('copy', filter=Q(copy__available=True))
-            ).filter(available_copies__gt=0)
+        final_query = queries.pop(0) if queries else Q()
+        for query in queries:
+            if search_logic == 'AND':
+                final_query &= query
+            else:
+                final_query |= query
 
-            return render(request, 'library/search_documents.html', {'form': form, 'documents': documents})
+        documents = Document.objects.filter(final_query).annotate(
+            available_copies=Count('copy', filter=Q(copy__available=True))
+        ).filter(available_copies__gt=0)
+
+        # Annotate documents with borrow information
+        client_email = request.session.get('client_email')
+        if client_email:
+            borrowed_borrows = Borrow.objects.filter(
+                client__email=client_email,
+                return_date__isnull=True
+            ).select_related('copy').only('copy__document_id', 'id')
+
+            borrow_map = {borrow.copy.document_id: borrow.id for borrow in borrowed_borrows}
+            for document in documents:
+                document.current_borrow_id = borrow_map.get(document.id)
+                document.is_borrowed_by_user = document.id in borrow_map
+
     else:
-        form = SearchForm()
+        documents = Document.objects.none()  # Ensuring that no documents are shown when form is not valid
 
-    return render(request, 'library/search_documents.html', {'form': form})
+    return render(request, 'library/search_documents.html', {
+        'form': form,
+        'documents': documents
+    })
 
 
 def pay_overdue_fees(request):
@@ -211,7 +241,6 @@ def manage_payment_methods(request):
 def manage_documents(request):
     if request.method == 'POST':
         document_form = DocumentForm(request.POST)
-        logger.debug("Received POST request with data: %s", request.POST)
         if document_form.is_valid():
             document = document_form.save(commit=False)
             document_type = request.POST.get('document_type')

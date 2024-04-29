@@ -14,6 +14,7 @@ urlpatterns = [
     path('librarian/logout/', views.librarian_logout, name='librarian_logout'),
     path('librarian/documents/update/<int:document_id>/', views.update_document, name='update_document'),
 
+
     # Client URLs
     path('client/', views.client_dashboard, name='client_dashboard'),
     path('client/login/', views.client_login, name='client_login'),

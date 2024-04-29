@@ -17,6 +17,18 @@
   {% for document in documents %}
   <li>
     {{ document.title }} - Type: {{ document.get_type_display }} - Publisher: {{ document.publisher.name }} - Available Copies: {{ document.available_copies }}
+    {% if document.available_copies > 0 %}
+    <form method="POST" action="{% url 'borrow_document' document.id %}" style="display: inline;">
+      {% csrf_token %}
+      <button type="submit" {% if document.is_borrowed_by_user %}disabled{% endif %}>Borrow</button>
+    </form>
+    {% endif %}
+    {% if document.is_borrowed_by_user %}
+    <form method="POST" action="{% url 'return_document' document.current_borrow_id %}" style="display: inline;">
+      {% csrf_token %}
+      <button type="submit">Return</button>
+    </form>
+    {% endif %}
   </li>
   {% endfor %}
   {% else %}

@@ -2,7 +2,6 @@ from django import forms
 from .models import Document, Client, OverdueFee, CreditCard, Address
 from .models import Document, Book, Magazine, JournalArticle, Author, Publisher
 
-
 class ClientForm(forms.ModelForm):
     address = forms.CharField(max_length=200)
     card_number = forms.CharField(max_length=20)
